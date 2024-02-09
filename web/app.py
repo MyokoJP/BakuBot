@@ -7,6 +7,7 @@ import discord
 import requests
 from discord.ext.commands import Bot, Cog
 from flask import Flask, render_template, request
+from waitress import serve
 
 import config
 from utils import GiveRole, VerifiedMember
@@ -85,13 +86,22 @@ class App(Cog):
 
             return render_template("index.html", title="認証が完了しました！",
                                    message="このページは閉じても構いません")
+        if config.WEB_DEBUG:
+            t = threading.Thread(
+                target=self.app.run,
+                kwargs={"port": config.WEB_PORT, "debug": config.WEB_DEBUG, "use_reloader": False,
+                        "threaded": False, "host": "0.0.0.0"},
+                daemon=True
+            )
+        else:
+            t = threading.Thread(
+                target=serve,
+                args=(self.app,),
+                kwargs={"port": config.WEB_PORT, "host": "0.0.0.0"},
+                daemon=True
+            )
 
-        threading.Thread(
-            target=self.app.run,
-            kwargs={"port": config.WEB_PORT, "debug": config.WEB_DEBUG, "use_reloader": False,
-                    "threaded": False},
-            daemon=True
-        ).start()
+        t.start()
 
     async def add_role(self, user, guild_id):
         guild = self.bot.get_guild(guild_id)
