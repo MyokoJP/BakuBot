@@ -20,8 +20,7 @@ async def on_ready():
     Database.initialize()
 
     # Status
-    guilds = bot.guilds
-    asyncio.create_task(switch_status(guilds))
+    asyncio.create_task(switch_status())
 
     # Schedule
     scheduler = BackgroundScheduler()
@@ -37,16 +36,17 @@ async def load_extensions():
     await bot.load_extension("web")
 
 
-async def switch_status(guilds):
-    count = 0
-    for i in guilds:
-        count += i.member_count
-
+async def switch_status():
     while True:
-        await bot.change_presence(activity=discord.Game(name=f"{len(guilds)} サーバー | {count} メンバー"))
-        await asyncio.sleep(5)
+        count = 0
+        for i in bot.guilds:
+            count += i.member_count
+
+        await bot.change_presence(
+            activity=discord.Game(name=f"{len(bot.guilds)} サーバー | {count} メンバー"))
+        await asyncio.sleep(10)
         await bot.change_presence(activity=discord.Game(name=f"By UTA SHOP"))
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
 
 bot.run(config.TOKEN)
