@@ -17,12 +17,11 @@ class VerifiedMember:
         self.expires_at = expires_at
 
     @staticmethod
-    def add(guild_id: int, user_id: int, access_token: str, refresh_token: str, expires_in: int):
+    def add(user_id: int, access_token: str, refresh_token: str, expires_in: int):
         """
         認証済みユーザーを追加します
 
         :param user_id: DiscordのユーザーID
-        :param guild_id: ギルドID
         :param access_token: アクセストークン
         :param refresh_token: リフレッシュトークン
         :param expires_in: アクセストークンの有効期限(秒)
@@ -34,39 +33,14 @@ class VerifiedMember:
         now = datetime.now().replace(microsecond=0)
         expires_at = now + timedelta(seconds=expires_in)
 
-        sql = "INSERT OR IGNORE INTO members VALUES(?, ?, ?, ?, ?, ?)"
-        cur.execute(sql, (guild_id, user_id, str(now), access_token, refresh_token, str(expires_at)))
+        sql = "INSERT OR IGNORE INTO members VALUES(?, ?, ?, ?, ?)"
+        cur.execute(sql, (user_id, str(now), access_token, refresh_token, str(expires_at)))
 
         conn.commit()
         conn.close()
 
     @staticmethod
-    def get(guild_id: int):
-        """
-        DBに保存された認証済みユーザーをギルドIDから取得します
-        :param guild_id: ギルドID
-
-        :return: list[VerifiedMember]
-        """
-
-        conn = Database.get_connection()
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-
-        sql = "SELECT * FROM members WHERE guild_id = ?"
-        cur.execute(sql, (guild_id,))
-
-        result = cur.fetchall()
-        return [VerifiedMember(
-            i["user_id"],
-            datetime.strptime(i["verified_at"], "%Y-%m-%d %H:%M:%S"),
-            i["access_token"],
-            i["refresh_token"],
-            datetime.strptime(i["expires_at"], "%Y-%m-%d %H:%M:%S"),
-        ) for i in result]
-
-    @staticmethod
-    def get_all():
+    def get():
         """
         DBに保存された認証済みユーザーをすべて取得します
 
@@ -98,7 +72,7 @@ class VerifiedMember:
         conn = Database.get_connection()
         cur = conn.cursor()
 
-        members = VerifiedMember.get_all()
+        members = VerifiedMember.get()
         now = datetime.now()
         for i in members:
             if now > i.expires_at:

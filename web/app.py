@@ -82,7 +82,7 @@ class App(Cog):
                                        message="もう一度お試しください")
 
             # DBにユーザー情報を登録
-            VerifiedMember.add(state, user_id, access_token, refresh_token, expires_in)
+            VerifiedMember.add(user_id, access_token, refresh_token, expires_in)
 
             return render_template("index.html", title="認証が完了しました！",
                                    message="このページは閉じても構いません")
@@ -125,7 +125,7 @@ class App(Cog):
         role_id = GiveRole.get(guild.id).role_id
         role = guild.get_role(role_id)
         if role is None:
-            print(f"Error: 指定されたロール {config.ROLE_ID} が見つかりませんでした ({guild})")
+            print(f"Error: 指定されたロール {role_id} が見つかりませんでした ({guild})")
             return False
 
         try:

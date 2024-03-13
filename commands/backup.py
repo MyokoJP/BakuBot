@@ -19,7 +19,7 @@ class Backup(Cog):
                                             ephemeral=True)
             return
 
-        members = VerifiedMember.get(ctx.guild_id)
+        members = VerifiedMember.get()
 
         count = 0
         for i in members:
@@ -39,16 +39,16 @@ class Backup(Cog):
                     f"https://discordapp.com/api/guilds/{ctx.guild.id}/members/{i.user_id}",
                     json=request_post, headers=token_header)
 
-                if request.status_code != 200:
+                if request.status_code != 201:
                     logging.error(f"メンバー復元に失敗しました: {request.json()}")
-
-                count += 1
+                else:
+                    count += 1
 
         await ctx.response.send_message(f"{count}人のメンバーを復元しました", ephemeral=True)
 
     @app_commands.command(name="check", description="復元可能なメンバー数をカウントします")
     async def check(self, ctx: Interaction):
-        members = VerifiedMember.get(ctx.guild_id)
+        members = VerifiedMember.get()
 
         count = 0
         for i in members:
